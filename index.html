@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Bump, Set, SPELL! 🏐</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { margin:0; overflow-x:hidden; font-family: Chalkboard, "Chalkboard SE", "Comic Sans MS", cursive;
+         background: linear-gradient(180deg,#ffb36b 0%,#ffd98a 45%,#f6e3b4 100%); min-height:100vh; color:#3b2a1a; text-align:center; }
+  .wrap { max-width:560px; margin:0 auto; padding:14px 14px 40px; }
+  h1 { font-size:2.4rem; margin:6px 0 0; color:#fff; text-shadow:3px 3px 0 #e8590c; }
+  .sub { font-size:1.1rem; margin:2px 0 8px; color:#7a3d0a; }
+  .score { font-size:1.4rem; min-height:32px; margin:4px 0 10px; }
+  .card { background:#fff; border-radius:24px; padding:18px 14px; box-shadow:0 6px 0 #e8a15a; margin-bottom:14px; }
+  .rule { text-align:left; font-size:1.08rem; line-height:1.5; }
+  button { font-family:inherit; border:none; cursor:pointer; }
+  .btn { font-size:1.3rem; padding:14px 18px; border-radius:18px; color:#fff; background:#7c4dff; box-shadow:0 5px 0 #4527a0; }
+  .btn:active { transform:translateY(3px); box-shadow:0 2px 0 rgba(0,0,0,.3); }
+  .big2 { display:block; width:100%; font-size:1.5rem; padding:18px; margin:9px 0; }
+  .orange { background:#f76707; box-shadow:0 5px 0 #a33d00; }
+  .blue { background:#1c7ed6; box-shadow:0 5px 0 #0b4a8a; }
+  .green { background:#2f9e44; box-shadow:0 5px 0 #165c25; }
+  .pink { background:#e64980; box-shadow:0 5px 0 #a61e4d; }
+  .gray { background:#868e96; box-shadow:0 5px 0 #495057; }
+  .row { display:flex; justify-content:center; gap:10px; margin-top:14px; flex-wrap:wrap; }
+  .hint { font-size:1.05rem; color:#8a6a4a; min-height:22px; }
+  .prompt { font-size:2rem; color:#c2410c; margin:6px 0; min-height:44px; }
+  .answer { min-height:64px; font-size:2.6rem; letter-spacing:4px; border-bottom:4px dashed #f76707; margin:10px 8px 14px; }
+  .tiles { display:flex; flex-wrap:wrap; justify-content:center; gap:9px; }
+  .tile { width:58px; height:58px; font-size:2rem; border-radius:50%; background:#fff;
+          border:4px solid #1c7ed6; box-shadow:0 4px 0 #0b4a8a; color:#1d2a5a; }
+  .tile:disabled { opacity:.2; }
+  .feedback { font-size:1.6rem; min-height:40px; margin-top:10px; }
+  .chopword { display:flex; justify-content:center; align-items:center; flex-wrap:wrap; margin:14px 0; }
+  .letter { font-size:2.6rem; padding:0 2px; }
+  .gap { width:26px; height:56px; margin:0 1px; border-radius:8px; background:#ffe8cc; border:2px dashed #f76707; font-size:1.4rem; color:#e8590c; }
+  .gap.on { background:#f76707; color:#fff; }
+  .court { position:relative; height:70px; margin:4px 0 8px; }
+  .ball { position:absolute; left:10%; top:30px; font-size:2.4rem; transition:left .7s ease, top .35s ease; }
+  .net { position:absolute; left:50%; top:4px; width:6px; height:62px; background:repeating-linear-gradient(#333 0 6px,#fff 6px 10px); }
+  .hide { display:none; }
+  .pop { animation:pop .35s ease; } @keyframes pop { 50%{transform:scale(1.25)} }
+  .shake { animation:shake .4s ease; } @keyframes shake { 25%{transform:translateX(-10px)} 75%{transform:translateX(10px)} }
+  .sortbtns .btn { font-size:1.6rem; min-width:120px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Bump, Set, SPELL! 🏐</h1>
+  <div class="sub">Aurora's Lesson 20 words · Test Nov 12</div>
+  <div class="score" id="score"></div>
+
+  <div id="menu" class="card">
+    <div class="rule">
+      <b>Coach's secret:</b> long words are easy if you <b>chop</b> them!<br>
+      🏐 <b>o | pen</b> and <b>mi | nus</b>: chop after the vowel, and it says its NAME.<br>
+      🏐 <b>un | der</b>, <b>rub | ber</b>: chop between the two buddies in the middle.<br>
+      🏐 Long O can wear 3 jerseys: <b>oa</b> (road), <b>oe</b> (foe), <b>o</b> (open).
+    </div>
+    <button class="btn big2 orange" onclick="start('spell')">🏐 Spike It!<br><span style="font-size:1rem">hear the word, build it</span></button>
+    <button class="btn big2 blue" onclick="start('chop')">✂️ Chop the Word<br><span style="font-size:1rem">split it into syllables</span></button>
+    <button class="btn big2 green" onclick="start('sort')">🎽 Long O Jerseys<br><span style="font-size:1rem">oa, oe, or o?</span></button>
+    <button class="btn big2 pink" onclick="start('fix')">🕵️ Spot the Oops<br><span style="font-size:1rem">which one is spelled right?</span></button>
+  </div>
+
+  <div id="game" class="card hide">
+    <div class="hint" id="info"></div>
+    <div class="court"><div class="net"></div><div class="ball" id="ball">🏐</div></div>
+    <div class="prompt" id="prompt"></div>
+    <div class="hint" id="hint"></div>
+    <div id="area"></div>
+    <div class="feedback" id="fb"></div>
+    <div class="row"><button class="btn gray" onclick="menu()">🏠 Menu</button></div>
+  </div>
+
+  <div id="done" class="card hide">
+    <div class="prompt">🏆 Game point! 🏆</div>
+    <div style="font-size:1.6rem" id="final"></div>
+    <div class="hint" id="best"></div>
+    <div class="row">
+      <button class="btn orange" onclick="start(mode)">Play again</button>
+      <button class="btn gray" onclick="menu()">🏠 Menu</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// split: syllable chunks. o: long-o spelling (for sort). fakes: tempting misspellings.
+const WORDS = [
+  {w:"under",  split:["un","der"],  say:"under. The cat is under the bed.",          fakes:["undur","unde"]},
+  {w:"noise",  split:["noise"],     say:"noise. The drum makes a loud noise.",       fakes:["noyse","nois"]},
+  {w:"open",   split:["o","pen"],   say:"open. Please open the door.",               o:"o", fakes:["opin","oapen"]},
+  {w:"brave",  split:["brave"],     say:"brave. The firefighter was brave.",         fakes:["brav","braev"]},
+  {w:"cute",   split:["cute"],      say:"cute. The puppy is so cute.",               fakes:["cuet","kute"]},
+  {w:"minus",  split:["mi","nus"],  say:"minus. Five minus two is three.",           fakes:["mynus","minis"]},
+  {w:"last",   split:["last"],      say:"last. I was the last one in line.",         fakes:["lasd","lasst"]},
+  {w:"foe",    split:["foe"],       say:"foe. A foe is an enemy.",                   o:"oe", fakes:["foa","fow"]},
+  {w:"rubber", split:["rub","ber"], say:"rubber. My boots are made of rubber.",      fakes:["ruber","rubbur"]},
+  {w:"road",   split:["road"],      say:"road. We drove down the road.",             o:"oa", fakes:["rowd","roed"]},
+];
+// extra long-o practice words so the sort game has enough rounds
+const SORT = [
+  {w:"road",o:"oa"},{w:"foe",o:"oe"},{w:"open",o:"o"},
+  {w:"boat",o:"oa"},{w:"toe",o:"oe"},{w:"go",o:"o"},
+  {w:"coat",o:"oa"},{w:"hoe",o:"oe"},{w:"no",o:"o"},{w:"soap",o:"oa"},
+];
+let mode=null, q=[], i=0, score=0, tries=0, built=[], used=[];
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice();for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]];}return a;};
+function speak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.rate=.85;u.pitch=1.1;speechSynthesis.speak(u);}catch(e){}}
+function show(id){["menu","game","done"].forEach(x=>$(x).classList.toggle("hide",x!==id));}
+function drawScore(){$("score").textContent="🏐".repeat(score);}
+function menu(){show("menu");}
+function cheer(){return ["🏐 SPIKE!","🔥 ACE!","🌟 Kill shot!","💥 Point, Aurora!","🎉 Nailed it!"][Math.floor(Math.random()*5)];}
+function ballOver(){const b=$("ball");b.style.top="0px";b.style.left="80%";setTimeout(()=>b.style.top="30px",350);}
+function ballReset(){const b=$("ball");b.style.transition="none";b.style.left="10%";void b.offsetWidth;b.style.transition="";}
+function win(msg){ if(tries===0){score++;drawScore();} $("fb").textContent=cheer(); speak(msg||"Point!"); ballOver(); i++; setTimeout(next,1800); }
+function miss(tip){ tries++; const a=$("area"); a.classList.remove("shake"); void a.offsetWidth; a.classList.add("shake"); $("fb").textContent=tip; }
+
+function start(m){
+  mode=m; score=0; i=0; drawScore();
+  q = m==="sort" ? shuffle(SORT) : m==="chop" ? shuffle(WORDS.filter(x=>x.split.length>1).concat(WORDS.filter(x=>x.split.length===1).slice(0,3))) : shuffle(WORDS);
+  show("game"); next();
+}
+function next(){
+  if(i>=q.length) return finish();
+  tries=0; built=[]; used=[]; ballReset();
+  $("info").textContent="Rally "+(i+1)+" of "+q.length; $("fb").textContent=""; $("area").innerHTML="";
+  ({spell:spellRound,chop:chopRound,sort:sortRound,fix:fixRound})[mode](q[i]);
+}
+
+// SPIKE IT: listen + build from ball tiles (with one decoy letter)
+function spellRound(it){
+  $("prompt").textContent="🎧"; $("hint").textContent="Listen, then tap the balls to spell it.";
+  const ans=document.createElement("div"); ans.className="answer"; ans.id="ans";
+  const decoys="aeiouyrsnt".split("").filter(c=>!it.w.includes(c));
+  const letters=it.w.split("").concat(decoys[Math.floor(Math.random()*decoys.length)]);
+  const tiles=document.createElement("div"); tiles.className="tiles";
+  shuffle(letters).forEach(c=>{const b=document.createElement("button");b.className="tile";b.textContent=c;
+    b.onclick=()=>{built.push(c);used.push(b);b.disabled=true;ans.textContent=built.join("");};tiles.appendChild(b);});
+  const row=document.createElement("div"); row.className="row";
+  row.innerHTML='<button class="btn" id="oops">⬅ Oops</button><button class="btn blue" id="hear">🔊 Hear it</button><button class="btn green" id="chk">✔ Spike!</button>';
+  $("area").append(ans,tiles,row);
+  $("oops").onclick=()=>{if(!built.length)return;built.pop();used.pop().disabled=false;ans.textContent=built.join("");};
+  $("hear").onclick=()=>speak(it.say);
+  $("chk").onclick=()=>{const g=built.join("");
+    if(g===it.w){ans.classList.add("pop");win(it.w+"! "+it.w.split("").join(", "));}
+    else{let tip="So close! Try again 💪";
+      if(tries>=1&&it.split.length>1) tip="Chop it! "+it.split.join(" | ");
+      if(tries>=2) tip="Peek: "+it.w;
+      if(it.w==="rubber"&&g==="ruber") tip="Rub | ber needs TWO b's: one for each side of the net!";
+      if(it.w==="noise"&&g.startsWith("noi")&&!g.endsWith("e")) tip="Don't forget the sneaky e at the end!";
+      miss(tip);}};
+  setTimeout(()=>speak(it.say),300);
+}
+
+// CHOP THE WORD: tap gaps between letters to place the chop
+function chopRound(it){
+  $("prompt").textContent=it.w; $("hint").textContent="Tap where to chop ✂️ (or No Chop if it's one beat!)";
+  speak(it.w);
+  const wrap=document.createElement("div"); wrap.className="chopword"; let chops=new Set();
+  it.w.split("").forEach((c,k)=>{ if(k>0){const g=document.createElement("button");g.className="gap";g.textContent="✂";
+      g.onclick=()=>{chops.has(k)?chops.delete(k):chops.add(k);g.classList.toggle("on");};wrap.appendChild(g);}
+    const s=document.createElement("span");s.className="letter";s.textContent=c;wrap.appendChild(s);});
+  const right=it.split.length>1?it.split[0].length:null;
+  const row=document.createElement("div"); row.className="row";
+  row.innerHTML='<button class="btn pink" id="nochop">🙅 No Chop</button><button class="btn blue" id="clap">👏 Clap it</button><button class="btn green" id="chk">✔ Check</button>';
+  $("area").append(wrap,row);
+  $("clap").onclick=()=>speak(it.split.join("... "));
+  const judge=(ok)=>{ if(ok) win(it.split.length>1?it.split.join(", ")+". "+it.w:it.w+" is one beat!");
+    else miss(it.split.length>1?(tries>=1?"Chop: "+it.split.join(" | "):"Clap it out! 👏 How many beats?"):"Clap it: "+it.w+" is just ONE beat!"); };
+  $("nochop").onclick=()=>judge(right===null);
+  $("chk").onclick=()=>judge(right!==null&&chops.size===1&&chops.has(right));
+}
+
+// LONG O JERSEYS
+function sortRound(it){
+  $("prompt").textContent="🎧"; $("hint").textContent="Which Long O jersey does this word wear?";
+  speak(it.w);
+  const row=document.createElement("div"); row.className="row sortbtns";
+  [["oa","orange"],["oe","blue"],["o","green"]].forEach(([o,c])=>{const b=document.createElement("button");b.className="btn "+c;b.textContent=o;
+    b.onclick=()=>{ if(o===it.o){$("prompt").textContent=it.w;win(it.w+" wears "+o.split("").join(" "));} else miss(tries>=1?"It's "+it.w+"!":"Hmm, listen again 🔊"); };row.appendChild(b);});
+  const r2=document.createElement("div"); r2.className="row"; r2.innerHTML='<button class="btn" id="hear">🔊 Hear it</button>';
+  $("area").append(row,r2); $("hear").onclick=()=>speak(it.w);
+}
+
+// SPOT THE OOPS: pick the correct spelling
+function fixRound(it){
+  $("prompt").textContent="🕵️"; $("hint").textContent="Only ONE is spelled right. Which one?";
+  speak("Find "+it.say);
+  const box=document.createElement("div");
+  shuffle([it.w].concat(it.fakes)).forEach(o=>{const b=document.createElement("button");b.className="btn big2 "+(["orange","blue","green"][Math.floor(Math.random()*3)]);
+    b.style.fontSize="2rem";b.textContent=o;
+    b.onclick=()=>{ if(o===it.w) win(it.w+"! "+it.w.split("").join(", ")); else {b.disabled=true;b.style.opacity=.3;miss("Oops spotted! "+o+" isn't it.");} };box.appendChild(b);});
+  const r2=document.createElement("div"); r2.className="row"; r2.innerHTML='<button class="btn" id="hear">🔊 Hear it</button>';
+  $("area").append(box,r2); $("hear").onclick=()=>speak(it.say);
+}
+
+function finish(){
+  show("done");
+  $("final").textContent="🏐 "+score+" out of "+q.length+" 🏐";
+  const key="bss-best-"+mode, best=Math.max(score,+(localStorage.getItem(key)||0));
+  localStorage.setItem(key,best);
+  $("best").textContent="Your best: "+best+". Can you beat it tomorrow?";
+  speak(score===q.length?"Perfect game! You are the M V P!":"Great game! You scored "+score+" points!");
+}
+</script>
+</body>
+</html>
